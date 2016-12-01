@@ -1,0 +1,42 @@
+#/bin/bash
+
+LOCATION=southeastasia
+RESOURCE=tests2s
+
+VNET=VNet1
+VNET_IP=10.1.0.0/16
+
+SUBNET=default
+SUBNET_IP=10.1.0.0/24
+
+SUBNET_GW=GatewaySubnet
+SUBNET_GW_IP=10.1.255.0/28
+
+VNET_GW=VNet1GW
+
+LNET=LNet2
+LNET_IP=10.2.0.0/24
+
+# require public ip from another side
+LNET_GW_IP=13.76.171.34
+PSK=roongvnettoyimvnet
+CONNECTION_TYPE=IPsec
+
+# 0
+azure group create $RESOURCE $LOCATION
+
+# 1
+azure network vnet create --address-prefixes $VNET_IP $RESOURCE $VNET $LOCATION
+azure network vnet subnet create $RESOURCE $VNET $SUBNET $SUBNET_IP
+azure network vnet subnet create $RESOURCE $VNET $SUBNET_GW $SUBNET_GW_IP
+
+# 2
+azure network public-ip create $RESOURCE $VNET_GW $LOCATION
+azure network vpn-gateway create --public-ip-name $VNET_GW --vnet-name $VNET $RESOURCE $VNET_GW $LOCATION
+
+azure network public-ip show $RESOURCE $VNET_GW
+
+# 3 require public ip from another side step 2 
+azure network local-gateway create --address-space $LNET_IP $RESOURCE $LNET $LOCATION $LNET_GW_IP
+azure network vpn-connection create --type $CONNECTION_TYPE --shared-key $PSK --lnet-gateway2 $LNET $RESOURCE $VNET-$LNET $LOCATION $VNET_GW
+
