@@ -5,3 +5,6 @@ sudo apt-get install -y nodejs
 
 sudo npm install -g azure-cli
 
+azure --completion >> ~/azure.completion.sh
+echo 'source ~/azure.completion.sh' >> ~/.bashrc
+source ~/azure.completion.sh
